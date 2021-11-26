@@ -1,0 +1,12 @@
+# general
+.DS_Store
+.AppleDouble
+.LSOverride
+**/__pycache__
+
+# jupyter data
+.ipynb_checkpoints
+*.ipynb
+
+# dirs
+data
