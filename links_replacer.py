@@ -39,6 +39,12 @@ def streamlit_app():
     st.subheader("Text templates:")
     uploaded_files = st.file_uploader("choose texts (allow multiple files):",
                                       accept_multiple_files=True)
+    files_dict = {}
+    if uploaded_files:
+        for uploaded_file in uploaded_files:
+            file_data = uploaded_file.read().decode("utf-8")
+            files_dict[uploaded_file.name] = file_data
+        st.write(f"{len(files_dict)} files uploaded.")
 
     st.subheader("CSV with links:")
     uploaded_csv = st.file_uploader(label="choose csv (allow single file):")
@@ -47,12 +53,8 @@ def streamlit_app():
         df = pd.read_csv(uploaded_csv)
         st.write(df)
 
-    if uploaded_files is not None and uploaded_csv is not None:
-        files_dict = {}
-        for uploaded_file in uploaded_files:
-            file_data = uploaded_file.read().decode("utf-8")
-            files_dict[uploaded_file.name] = file_data
-
+    if files_dict and uploaded_csv is not None:
+        st.subheader("Parameters:")
         columns_array = np.array(df.columns)
         col1, col2 = st.columns(2)
         with col1:
@@ -68,7 +70,7 @@ def streamlit_app():
         if len(count_list) > 5:
             st.write("too many groups founded (>5), change 'Count column'")
         else:
-            col1, *cols = st.columns(4)
+            col1, *cols = st.columns(2)
             with col1:
                 links_number = st.number_input(
                     'choose number of link tepmplates in text file:',
@@ -103,8 +105,28 @@ def streamlit_app():
                     link_groups['link_counts'].append(number)
                     link_groups['links'].append(group_df[url_option].values)
 
-            col1, col2, col3, *cols = st.columns(4)
-            with col3:
+            st.markdown("""
+                        <style>
+                        div.stButton > button:first-child {
+                            background-color: rgb(236, 90, 83);
+                            width: 22em;
+                        }
+                        div.stButton > button:first-child:hover {
+                            text-decoration:underline;
+                            color: rgb(0, 0, 0);
+                        }
+                        div.stButton > button:first-child:active {
+                            text-decoration:underline;
+                            color: rgb(0, 0, 0);
+                        }
+                        div.stButton > button:first-child:visited {
+                            text-decoration:underline;
+                            color: rgb(0, 0, 0);
+                        </style>""", unsafe_allow_html=True)
+
+            _, col2, *_ = st.columns(4)
+            with col2:
+                st.text("")
                 process = st.button('Process')
             if process:
                 links_2d_array = process_link_array(link_groups, links_number)
@@ -125,12 +147,22 @@ def streamlit_app():
                                             files_dict[filename])))
 
                     zip_file.close()
-                    st.write(f"{len(links_2d_array)} files processed")
-                    st.download_button('Download archive',
-                                    mem_file.getvalue(),
-                                    "archive.zip",
-                                    mime='application/zip',
-                                    )
+                    
+                    _, col2, *_ = st.columns(4)
+                    with col2:
+                        st.write(
+                            f"🎉 {len(links_2d_array)} files processed!")
+                        st.markdown("""
+                            <style>
+                            div.stDownloadButton > button:first-child {
+                                width: 22em;
+                            }
+                            </style>""", unsafe_allow_html=True)
+                        st.download_button('Download archive',
+                                        mem_file.getvalue(),
+                                        "archive.zip",
+                                        mime='application/zip',
+                                        )
 
 
 if __name__ == '__main__':
